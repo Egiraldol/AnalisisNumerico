@@ -1,5 +1,6 @@
 import pandas as pd
 import math
+import numpy as np
 
 def secant_method(Xi: float, Xs: float, Tol: float, Niter: int, Fun: str):
     # Listas para almacenar los valores de la función y los errores
