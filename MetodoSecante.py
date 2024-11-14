@@ -14,6 +14,7 @@ iteraciones = []
 xi_list = []
 f_xi_list = []
 error_list = []
+error_relativo_list=[]
 
 # Evaluación inicial
 x = Xi
@@ -58,8 +59,7 @@ else:
         fe = eval(Fun)
 
         # Cálculo del error
-        Error = abs(Xm - Xs)
-        error_relativo = Error/Xm
+        Error = abs(Xm - Xs)/Xm
 
         # Almacenamos los resultados de cada iteración
         c += 1
@@ -81,7 +81,7 @@ else:
         'Iteración': iteraciones,
         'xi': xi_list,
         'f(xi)': f_xi_list,
-        'e (relativ)': error_list
+        'E (relativo)': error_list
     })
 
     # Mostrar la tabla
