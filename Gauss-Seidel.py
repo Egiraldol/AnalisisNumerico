@@ -1,55 +1,95 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
-def gauss_seidel(A, b, x0, tol, niter):
-    """
-    Método de Gauss-Seidel para resolver sistemas de ecuaciones lineales A * x = b.
+def gauss_seidel_interactive():
+    print("Ingrese el vector inicial x0 (por ejemplo, 0 0 para [0, 0]):")
+    x0 = list(map(float, input().split()))
     
-    :param A: Matriz de coeficientes (numpy array de tamaño n x n).
-    :param b: Vector de términos independientes (numpy array de tamaño n).
-    :param x0: Vector inicial de valores de las incógnitas (numpy array de tamaño n).
-    :param tol: Tolerancia para el criterio de convergencia.
-    :param niter: Número máximo de iteraciones.
-    :return: Un DataFrame con la tabla de iteraciones, errores, radio espectral, convergencia.
-    """
-    # Dimensiones de la matriz A
-    n = A.shape[0]
-    x = np.copy(x0)
-    errors = []
-    iter_data = []  # Para almacenar cada iteración
-
-    # Calcular el radio espectral (valor absoluto del mayor autovalor de la matriz iterativa)
+    print("Ingrese la matriz A (por ejemplo, 4 -1; -2 4 para [[4, -1], [-2, 4]]):")
+    A = []
+    for i in range(len(x0)):
+        row = list(map(float, input(f"Fila {i+1}: ").split()))
+        A.append(row)
+    
+    print("Ingrese el vector independiente b (por ejemplo, 3 1 para [3, 1]):")
+    b = list(map(float, input().split()))
+    
+    print("Ingrese la tolerancia:")
+    tol = float(input())
+    
+    print("Ingrese el número máximo de iteraciones:")
+    niter = int(input())
+    
+    print("Seleccione el tipo de error (1 para Error Absoluto, 2 para Error Relativo):")
+    et = 'Error Absoluto' if input() == '1' else 'Error Relativo'
+    
+    x0 = np.array(x0, dtype=float)
+    A = np.array(A, dtype=float)
+    b = np.array(b, dtype=float)
+    n = len(b)
+    c = 0
+    error = tol + 1
+    E = []
+    xn = []
+    N = []
+    
+    # Descomposición de A
     D = np.diag(np.diag(A))
-    L = np.tril(A, -1)
-    U = np.triu(A, 1)
-    T = np.linalg.inv(D - L) @ U  # Matriz iterativa para Gauss-Seidel
-    spectral_radius = max(abs(np.linalg.eigvals(T)))
-
-    # Determinar si el método puede converger basado en el radio espectral
-    converge = spectral_radius < 1
-
-    for k in range(niter):
-        x_old = np.copy(x)
-
-        for i in range(n):
-            sum1 = np.dot(A[i, :i], x[:i])
-            sum2 = np.dot(A[i, i + 1:], x_old[i + 1:])
-            x[i] = (b[i] - sum1 - sum2) / A[i, i]
-        
-        # Calcular error relativo
-        error = np.linalg.norm(x - x_old, ord=np.inf) / np.linalg.norm(x, ord=np.inf)
-        errors.append(error)
-
-        # Agregar datos de la iteración a la tabla
-        iter_data.append([k + 1] + list(x) + [error])
-
-        # Verificar convergencia
-        if error < tol:
+    L = -np.tril(A, -1)
+    U = -np.triu(A, 1)
+    
+    # Preparar matrices para iteración
+    T = np.linalg.inv(D - L) @ U
+    C = np.linalg.inv(D - L) @ b
+    
+    # Calcular el radio espectral
+    Re = max(abs(np.linalg.eigvals(T)))
+    converge_msg = "El método converge" if Re < 1 else "El método no converge"
+    
+    # Verificar si alguna fila de A tiene una solución directa
+    x = x0
+    initial_check = False
+    for i in range(n):
+        if np.isclose(np.dot(A[i], x), b[i]):
+            initial_check = True
+            print(f"{x} es una solución directa del sistema.")
             break
+    
+    if not initial_check:
+        # Iteraciones de Gauss-Seidel
+        while error > tol and c < niter:
+            x1 = T @ x0 + C
+            
+            # Calcular error
+            if et == 'Error Absoluto':
+                current_error = np.linalg.norm(x1 - x0, ord=np.inf)
+            else:
+                current_error = np.linalg.norm((x1 - x0) / x1, ord=np.inf)
+            
+            E.append(current_error)
+            xn.append(x1.copy())
+            N.append(c + 1)
+            
+            error = current_error
+            x0 = x1
+            c += 1
+        
+        # Resultado final
+        if error < tol:
+            result_msg = f"{x1} es una aproximación de la solución con una tolerancia de {tol}\n"
+        else:
+            result_msg = f"Fracaso en {niter} iteraciones\n"
+        
+        # Mostrar tabla de iteraciones
+        table = pd.DataFrame({'Iteración': N, 'Aproximación (xn)': xn, 'Error': E})
+        print("\nTabla de resultados de Gauss-Seidel:")
+        print(table.to_string(index=False))
+        
+        # Mostrar radio espectral y convergencia
+        print(f"\nRadio espectral de T = {Re}")
+        print(converge_msg)
+        print(result_msg)
+    else:
+        print("El sistema tiene una solución directa, no se requieren iteraciones.")
 
-    # Convertir la tabla de iteraciones a un DataFrame
-    column_names = ['Iteración'] + [f'x{i+1}' for i in range(n)] + ['Error']
-    df_iter = pd.DataFrame(iter_data, columns=column_names)
-
-    return df_iter, spectral_radius, converge, x, errors
+gauss_seidel_interactive()

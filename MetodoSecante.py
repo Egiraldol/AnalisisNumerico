@@ -66,7 +66,7 @@ else:
         iteraciones.append(c)
         xi_list.append(Xm)
         f_xi_list.append(fe)
-        error_list.append(error_relativo)
+        error_list.append(Error)
 
     # Verificación de la raíz o aproximación
     if fe == 0:
