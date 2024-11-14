@@ -59,13 +59,14 @@ else:
 
         # Cálculo del error
         Error = abs(Xm - Xs)
+        error_relativo = Error/Xm
 
         # Almacenamos los resultados de cada iteración
         c += 1
         iteraciones.append(c)
         xi_list.append(Xm)
         f_xi_list.append(fe)
-        error_list.append(Error)
+        error_list.append(error_relativo)
 
     # Verificación de la raíz o aproximación
     if fe == 0:
@@ -80,7 +81,7 @@ else:
         'Iteración': iteraciones,
         'xi': xi_list,
         'f(xi)': f_xi_list,
-        'E (abs)': error_list
+        'e (relativ)': error_list
     })
 
     # Mostrar la tabla
